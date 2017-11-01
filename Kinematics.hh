@@ -31,6 +31,7 @@ public:
   void SetAngles(double angle, int part, bool upper=false);
   //get
   TSpline3* Evslab(double thmin, double thmax, double size, int part = 2);
+  TSpline3* EvslabMeV(double thmin, double thmax, double size, int part = 2);
   TSpline3* Evscm(double thmin, double thmax, double size, int part = 2);
   TSpline3* labvscm(double thmin, double thmax, double size, int part = 2);
   TSpline3* cmvslab(double thmin, double thmax, double size, int part = 2);

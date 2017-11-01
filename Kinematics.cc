@@ -54,6 +54,27 @@ TSpline3* Kinematics::Evslab(double thmin, double thmax, double size, int part){
   delete[] energy;
   return spline;
 }
+
+TSpline3* Kinematics::EvslabMeV(double thmin, double thmax, double size, int part){
+  double* energy = new double[(int)((thmax-thmin)/size)+1];
+  double* angle = new double[(int)((thmax-thmin)/size)+1];
+  int number =0;
+  for(int i=0;i<((thmax-thmin)/size);i++){
+    Final((thmin+i*size)*deg2rad,2);
+    angle[i]=GetThetalab(part)*rad2deg;
+    energy[i]=GetTlab(part);
+    if(energy[i]<1e15||energy[i]>0.0)
+      number++;
+    else
+      break;
+  }
+  TGraph* graph = new TGraph(number, angle, energy);
+  TSpline3* spline = new TSpline3("ETh_lab",graph);
+  delete graph;
+  delete[] angle;
+  delete[] energy;
+  return spline;
+}
 TSpline3* Kinematics::Evscm(double thmin, double thmax, double size, int part){
   double* energy = new double[(int)((thmax-thmin)/size)+1];
   double* angle = new double[(int)((thmax-thmin)/size)+1];
