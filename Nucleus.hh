@@ -17,6 +17,7 @@ class Nucleus : public TObject{
   Nucleus(char*);
   Nucleus(int, int, double, const char*);
   Nucleus(int Z, int N, char*);
+  Nucleus(int Z, int N);
   void SetZ(int);
   void SetN(int);
   void SetMassExcess(double);  

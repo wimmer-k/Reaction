@@ -106,11 +106,10 @@ int main(int argc, char* argv[]){
   Nucleus *ejec;
 
   int numb =0;
-  //adjust here
-  char* massFile = (char*)"/home/wimmer/progs/reaction/mass.dat";  
+
   if(projectile.size() == 2){
     cout << "projectile Z " << projectile[1] << " N " << projectile[0] << endl;
-    proj = new Nucleus(projectile[1],projectile[0], massFile);
+    proj = new Nucleus(projectile[1],projectile[0], (char*)MASSFILE);
   }
   else{
     cerr<<"no or incorrect Projectile provided!";
@@ -123,7 +122,7 @@ int main(int argc, char* argv[]){
 
   if(target.size() == 2){
     cout << "target Z " << target[1] << " N " << target[0] << endl;
-    targ = new Nucleus(target[1],target[0], massFile);
+    targ = new Nucleus(target[1],target[0], (char*)MASSFILE);
   }
   else{
     cerr<<"flag -p provided but not two arguments following: ";
@@ -146,9 +145,9 @@ int main(int argc, char* argv[]){
   if(transfer.size() > 0&&transfer.size() <4){
     cout << "transfer reaction deltaN = " << transfer[0] <<endl;
     cout << "----------------------------"<<endl;
-    reco = new Nucleus(target[1],target[0]-(int)transfer[0], massFile);
+    reco = new Nucleus(target[1],target[0]-(int)transfer[0], (char*)MASSFILE);
     cout << "recoil Z " << target[1] << "\tN " << target[0]-transfer[0] <<"\t" << reco->GetMass()<< endl;
-    ejec = new Nucleus(projectile[1],projectile[0]+(int)transfer[0], massFile);
+    ejec = new Nucleus(projectile[1],projectile[0]+(int)transfer[0], (char*)MASSFILE);
     cout << "ejectile Z " << projectile[1] << "\tN " << projectile[0]+transfer[0] <<"\t" << ejec->GetMass()<< endl;
     if(transfer.size() == 3){
       cout << transfer[2]<< " steps to state with excitation energy = " << transfer[1] <<endl;
@@ -173,9 +172,9 @@ int main(int argc, char* argv[]){
   else if(pickup!=0){
     cout << "transfer reaction deltaN = " << -pickup <<endl;
     cout << "----------------------------"<<endl;
-    reco = new Nucleus(target[1],target[0]+(int)pickup, massFile);
+    reco = new Nucleus(target[1],target[0]+(int)pickup, (char*)MASSFILE);
     cout << "recoil Z " << target[1] << " N " << target[0]+pickup << endl;
-    ejec = new Nucleus(projectile[1],projectile[0]-(int)pickup, massFile);
+    ejec = new Nucleus(projectile[1],projectile[0]-(int)pickup, (char*)MASSFILE);
     cout << "ejectile Z " << projectile[1] << " N " << projectile[0]-pickup << endl;
     cout << "ejec Z " << ejec->GetZ() << " N " << ejec->GetN() << " reco Z " << reco->GetZ() << " N " << reco->GetZ() << endl;
 
@@ -184,9 +183,9 @@ int main(int argc, char* argv[]){
   else if(protont!=0){
     cout << "proton transfer reaction deltaP = " << protont <<endl;
     cout << "----------------------------"<<endl;
-    reco = new Nucleus(target[1]-protont,target[0], massFile);
+    reco = new Nucleus(target[1]-protont,target[0], (char*)MASSFILE);
     cout << "recoil Z " << target[1]-protont << " N " << target[0] << endl;
-    ejec = new Nucleus(projectile[1]+protont,projectile[0], massFile);
+    ejec = new Nucleus(projectile[1]+protont,projectile[0], (char*)MASSFILE);
     cout << "ejectile Z " << projectile[1]+protont << " N " << projectile[0] << endl;
     //cout << "ejec " << ejec->GetMass() << " reco " << reco->GetMass() << endl;
  
@@ -195,9 +194,9 @@ int main(int argc, char* argv[]){
   else if(chargeex!=0){
     cout << "charge exchange deltaZ = " << chargeex <<endl;
     cout << "----------------------------"<<endl;
-    reco = new Nucleus(target[1]+chargeex,target[0]-chargeex, massFile);
+    reco = new Nucleus(target[1]+chargeex,target[0]-chargeex, (char*)MASSFILE);
     cout << "recoil Z " << target[1]+chargeex << " N " << target[0]-chargeex << endl;
-    ejec = new Nucleus(projectile[1]-chargeex,projectile[0]+chargeex, massFile);
+    ejec = new Nucleus(projectile[1]-chargeex,projectile[0]+chargeex, (char*)MASSFILE);
     cout << "ejectile Z " << projectile[1] -chargeex<< " N " << projectile[0]+chargeex << endl;
     //cout << "ejec " << ejec->GetMass() << " reco " << reco->GetMass() << endl;
 
@@ -208,9 +207,9 @@ int main(int argc, char* argv[]){
   else if(fusion!=0){
     cout << "fusion reaction " <<endl;
     cout << "----------------------------"<<endl;
-    reco = new Nucleus(target[1]+projectile[1],target[0]+projectile[0], massFile);
+    reco = new Nucleus(target[1]+projectile[1],target[0]+projectile[0], (char*)MASSFILE);
     cout << "recoil Z " << target[1]+projectile[1] << " N " << target[0]+projectile[0] << endl;
-    ejec = new Nucleus(0,0, massFile);
+    ejec = new Nucleus(0,0, (char*)MASSFILE);
     cout << "ejectile Z " << 0 << " N " << 0 << endl;
     cout << "ejec " << ejec->GetMass() << " reco " << reco->GetMass() << endl;
 
@@ -219,8 +218,8 @@ int main(int argc, char* argv[]){
   else if(coulex.size() > 0){
     cout << "coulex " <<endl;
     cout << "----------------------------"<<endl;
-    ejec = new Nucleus(projectile[1],projectile[0], massFile);
-    reco = new Nucleus(target[1],target[0], massFile);
+    ejec = new Nucleus(projectile[1],projectile[0], (char*)MASSFILE);
+    reco = new Nucleus(target[1],target[0], (char*)MASSFILE);
     trst = coulex.size();
     for(UShort_t k=0;k<coulex.size()&&coulex.size()<17;k++){
       boomar[k] = new Kinematics(proj, targ, targ, proj, ebeam, coulex[k]);
@@ -232,8 +231,8 @@ int main(int argc, char* argv[]){
   else{
     cout << "elastic scattering " <<endl;
     cout << "----------------------------"<<endl;
-    ejec = new Nucleus(projectile[1],projectile[0], massFile);
-    reco = new Nucleus(target[1],target[0], massFile);
+    ejec = new Nucleus(projectile[1],projectile[0], (char*)MASSFILE);
+    reco = new Nucleus(target[1],target[0], (char*)MASSFILE);
 	
     boom = new Kinematics(proj, targ, ebeam);
   }

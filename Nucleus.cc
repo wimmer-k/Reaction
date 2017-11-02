@@ -89,6 +89,38 @@ Nucleus::Nucleus(int charge, int neutrons, char* MassFile){
   //max_elements=i;
   mass_file.close();
 }
+Nucleus::Nucleus(int charge, int neutrons){
+  fZ = charge;  
+  fN = neutrons;
+  int i = 0,n,z;
+  double emass;
+  char tmp[256];
+  ifstream mass_file;
+  fMass = 0;
+  mass_file.open(MASSFILE,ios::in);
+  fMassExcess = -1;
+  fSymbol = "XX";
+  while(!mass_file.bad() && !mass_file.eof() && i < 3008){
+    mass_file>>n;
+    mass_file>>z;
+    mass_file>>tmp;
+    mass_file>>emass;
+    if(n==fN&&z==fZ){
+      fMassExcess = emass/1000.;
+      fSymbol = tmp;
+#ifdef debug
+      cout << "Symbol " << fSymbol << " tmp " << tmp <<endl;
+#endif
+      SetMass();
+      SetSymbol(tmp);
+      break;
+    }
+    i++;
+    mass_file.ignore(256,'\n');
+  }  
+  //max_elements=i;
+  mass_file.close();
+}
 
 void Nucleus::SetZ(int charge){
   fZ = charge;
