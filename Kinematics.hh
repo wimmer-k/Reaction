@@ -16,17 +16,24 @@
 #ifndef PI
 #define PI                       (TMath::Pi())
 #endif
+#ifndef rad2deg
+#define rad2deg                       180./(TMath::Pi())
+#endif
+#ifndef deg2rad
+#define deg2rad                       (TMath::Pi())/180.
+#endif
 
 using namespace std;
 
 class Kinematics : public TObject{
 public:
+  Kinematics(){cout << "need projectile,target and energy"<<endl;};
   Kinematics(Nucleus* projectile, Nucleus* target, double ebeam);
   Kinematics(Nucleus* projectile, Nucleus* target, Nucleus* recoil, Nucleus* ejectile, double ebeam, double ex3);
 
   void Initial();
   void FinalCm();
-  void Final(double angle, int part);
+  void Final(double angle, int part, bool upper=true);
   //void SetAngles(double angle, int part);
   void SetAngles(double angle, int part, bool upper=false);
   //get
@@ -35,6 +42,13 @@ public:
   TSpline3* Evscm(double thmin, double thmax, double size, int part = 2);
   TSpline3* labvscm(double thmin, double thmax, double size, int part = 2);
   TSpline3* cmvslab(double thmin, double thmax, double size, int part = 2);
+  TGraph* GGEvslab(double thmin, double thmax, double size, int part = 2);
+  TGraph* GEvslab(double thmin, double thmax, double size, int part = 2);
+  TGraph* GGAEvslab(double thmin, double thmax, double size, int part = 2);
+  TGraph* GAEvslab(double thmin, double thmax, double size, int part = 2);
+  // TGraph* Evscm(double thmin, double thmax, double size, int part = 2);
+  // TGraph* labvscm(double thmin, double thmax, double size, int part = 2);
+  // TGraph* cmvslab(double thmin, double thmax, double size, int part = 2);
   double GetQValue(){
     return fQValue;
   }
@@ -42,10 +56,11 @@ public:
   double GetCmEnergy();
   double GetBeamEnergy(double LabAngle, double LabEnergy);
   double GetMaxAngle(double vcm);
-  double GetMaxAngle(int part);
+  double GetMaxAngleP(int part);
   double NormalkinEnergy();
   bool CheckMaxAngle(double angle, int part);
   double GetExcEnergy(TLorentzVector recoil);
+  double GetExcEnergy(TLorentzVector recoil, int part);
   double ELab(double angle_lab, int part);
   double GetElab(int i){
     return fE[i];
@@ -108,18 +123,23 @@ public:
   TSpline3* Ruthvslab(double thmin, double thmax, double size, int part); 
   double Angle_lab2cm(double vcm, double angle_lab);
   double Angle_lab2cminverse(double vcm, double angle_lab, bool upper);
+  double Angle_lab2cm_p(double angle_cm, int part, bool upper=true);
   double Angle_cm2lab(double vcm, double angle_cm);
+  double Angle_cm2lab_p(double angle_cm, int part);
   double Sigma_cm2lab(double angle_cm, double sigma_cm);
   double Sigma_lab2cm(double angle_cm, double sigma_lab);
   void Transform2cm(double &angle, double &sigma);
   void Transform2cm(double &angle, double &errangle, double &sigma, double &errsigma);
+  void Transform2lab(double &angle, double &sigma);
   void AngleErr_lab2cm(double angle, double &err);
   void SigmaErr_lab2cm(double angle, double err, double &sigma, double &errsigma);
   //double Sigma_cm2labnew(double vcm, double angle_cm, double sigma_cm);
   double Rutherford(double angle_cm);
   double RutherfordMilliBarn(double angle_cm);
 
-    
+  double Beta_tm(double t, double m){return P_tm(t,m)/E_tm(t,m); }
+  double P_tm(double, double);
+  double T_pm(double, double);
 private:
 
   double fTCm_i;
@@ -147,7 +167,6 @@ private:
   double fGamma_cm;
 
   double Pcm_em(double, double);
-  double P_tm(double, double);
   double E_tm(double, double);
   double T_em(double, double);
   double betacm_tm(double, double);

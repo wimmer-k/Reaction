@@ -1,6 +1,4 @@
 #include "Kinematics.hh"
-double deg2rad=PI/180.;
-double rad2deg=180./PI;
 
 using namespace std;
 
@@ -29,9 +27,99 @@ Kinematics::Kinematics(Nucleus* projectile, Nucleus* target, Nucleus* recoil, Nu
   Initial();
   FinalCm();
 }
-
+TGraph* Kinematics::GGAEvslab(double thmin, double thmax, double size, int part){
+  cout << " Graph return MeV!" << endl;
+  double* energy = new double[(int)((thmax-thmin)/size)+1];
+  double* angle = new double[(int)((thmax-thmin)/size)+1];
+  int number =0;
+  bool upper = true;
+  for(int i=0;i<((thmax-thmin)/size);i++){
+    double labangle = Angle_cm2lab(fVcm[part],(thmin+i*size)*deg2rad);
+    Final(labangle,part,upper);
+    angle[i]=GetThetalab(part)*rad2deg;
+    energy[i]=GetTlab(part)/fParticle[part]->GetA();
+    // if(fabs(angle[i]-GetMaxAngleP(part)*rad2deg)<0.1 && upper==true)
+    //   upper = false;
+    // cout << i << "\t"<< angle[i] << "\t" << energy[i];
+    // if(upper)
+    //   cout << "\tupper";
+    // else
+    //   cout << "\tlower";
+    // cout << endl;
+    if(energy[i]<1e15 && energy[i]>0.0)
+      number++;
+    else
+      break;
+  }
+  TGraph* graph = new TGraph(number, angle, energy);
+  return graph;
+}
+TGraph* Kinematics::GGEvslab(double thmin, double thmax, double size, int part){
+  cout << " Graph return MeV!" << endl;
+  double* energy = new double[(int)((thmax-thmin)/size)+1];
+  double* angle = new double[(int)((thmax-thmin)/size)+1];
+  int number =0;
+  bool upper = true;
+  for(int i=0;i<((thmax-thmin)/size);i++){
+    double labangle = Angle_cm2lab(fVcm[part],(thmin+i*size)*deg2rad);
+    // cout << fVcm[part] << "\t" << labangle << endl;
+    Final(labangle,part,upper);
+    angle[i]=GetThetalab(part)*rad2deg;
+    energy[i]=GetTlab(part);
+    if(fabs(angle[i]-GetMaxAngleP(part)*rad2deg)<0.1 && upper==true)
+      upper = false;
+    // cout << i << "\t"<< angle[i] << "\t" << energy[i];
+    // if(upper)
+    //   cout << "\tupper";
+    // else
+    //   cout << "\tlower";
+    // cout << endl;
+    if(energy[i]<1e15 && energy[i]>0.0)
+      number++;
+    else
+      break;
+  }
+  TGraph* graph = new TGraph(number, angle, energy);
+  return graph;
+}
+TGraph* Kinematics::GAEvslab(double thmin, double thmax, double size, int part){
+  cout << " Graph return MeV!" << endl;
+  double* energy = new double[(int)((thmax-thmin)/size)+1];
+  double* angle = new double[(int)((thmax-thmin)/size)+1];
+  int number =0;
+  for(int i=0;i<((thmax-thmin)/size);i++){
+    Final((thmin+i*size)*deg2rad,2);
+    angle[i]=GetThetalab(part)*rad2deg;
+    energy[i]=GetTlab(part)/fParticle[part]->GetA();
+    //cout << i << "\t"<< angle[i] << "\t" << energy[i] << endl;
+    if(energy[i]<1e15 && energy[i]>0.0)
+      number++;
+    else
+      break;
+  }
+  TGraph* graph = new TGraph(number, angle, energy);
+  return graph;
+}
+TGraph* Kinematics::GEvslab(double thmin, double thmax, double size, int part){
+  cout << " Graph return MeV!" << endl;
+  double* energy = new double[(int)((thmax-thmin)/size)+1];
+  double* angle = new double[(int)((thmax-thmin)/size)+1];
+  int number =0;
+  for(int i=0;i<((thmax-thmin)/size);i++){
+    Final((thmin+i*size)*deg2rad,2);
+    angle[i]=GetThetalab(part)*rad2deg;
+    energy[i]=GetTlab(part);
+    //cout << i << "\t"<< angle[i] << "\t" << energy[i] << endl;
+    if(energy[i]<1e15 && energy[i]>0.0)
+      number++;
+    else
+      break;
+  }
+  TGraph* graph = new TGraph(number, angle, energy);
+  return graph;
+}
 TSpline3* Kinematics::Evslab(double thmin, double thmax, double size, int part){
-  //cout << "maximum scattering angle: " << GetMaxAngle(fVcm[part])*180./PI  << endl;
+  //cout << "maximum scattering angle: " << GetMaxAngle(fVcm[part])*rad2deg  << endl;
   //cout << "max " << thmax << " min " << thmin << " steps " << (int)((thmax-thmin)/size)+1 << endl;
   double* energy = new double[(int)((thmax-thmin)/size)+1];
   double* angle = new double[(int)((thmax-thmin)/size)+1];
@@ -54,7 +142,6 @@ TSpline3* Kinematics::Evslab(double thmin, double thmax, double size, int part){
   delete[] energy;
   return spline;
 }
-
 TSpline3* Kinematics::EvslabMeV(double thmin, double thmax, double size, int part){
   double* energy = new double[(int)((thmax-thmin)/size)+1];
   double* angle = new double[(int)((thmax-thmin)/size)+1];
@@ -104,7 +191,34 @@ double Kinematics::GetExcEnergy(TLorentzVector recoil){
 
   double eex = ejectile.M() - fParticle[3]->GetMass()*1000.;
 
-  return eex;							    
+  return eex;
+							    
+}
+double Kinematics::GetExcEnergy(TLorentzVector recoil, int part){
+  TLorentzVector ejectile;
+  double eex = 0;
+  if(part==2){
+    recoil.Boost(0,0,-GetBetacm()); //boost to cm system
+    
+    ejectile.SetVect( -recoil.Vect() ); //pr = -pe
+    ejectile.SetE(GetCmEnergy()*1000. - recoil.E()); //Ee=Ecm-Er
+    
+    ejectile.Boost(0,0,GetBetacm()); //boost to lab system
+    
+    eex = ejectile.M() - fParticle[3]->GetMass()*1000.;
+  }
+  else if(part==3){
+    recoil.Boost(0,0,-GetBetacm()); //boost to cm system
+    
+    ejectile.SetVect( -recoil.Vect() ); //pr = -pe
+    ejectile.SetE(GetCmEnergy()*1000. - recoil.E()); //Ee=Ecm-Er
+    
+    ejectile.Boost(0,0,GetBetacm()); //boost to lab system
+    
+    eex = ejectile.M() - fParticle[2]->GetMass()*1000.;
+  }
+  return eex;
+							    
 }
 double Kinematics::GetBeamEnergy(double LabAngle, double LabEnergy){
   double ProjectileMass=fM[0]*1000;
@@ -188,11 +302,12 @@ void Kinematics::FinalCm(){
   cout << "fBeta_cm = " << fBeta_cm<<endl;
   */
 }
-void Kinematics::Final(double angle, int part){//angle of proton in lab system
-  if(angle>GetMaxAngle(fVcm[part]))
-    SetAngles(0, part);
-  else
-    SetAngles(angle, part);
+void Kinematics::Final(double angle, int part, bool upper){//angle of proton in lab system
+  // if(angle>GetMaxAngle(fVcm[part]))
+  //   SetAngles(angle, part, false);
+  // else
+  //   SetAngles(angle, part, true);
+  SetAngles(angle, part, upper);
   fE[2]=E_final(2);
   fE[3]=E_final(3);
   fT[2]=T_final(2);
@@ -203,10 +318,10 @@ void Kinematics::Final(double angle, int part){//angle of proton in lab system
   //cout << "Ve = " << V_pe(fP[3],fE[3]) << endl; 
   fP[2]=P_tm(fT[2],fM[2]);
   //fP[2]=fGamma_cm*fPcm[2]*(cos(fThetacm[2])+fBeta_cm/fVcm[2]);
-  //cout << fTheta[2]*180./PI << "\t" << GetTlab(2)  << "\tVr = " << V_pe(fP[2],fE[2]) << "\tPr = " << fP[2] << "\t"; 
+  //cout << fTheta[2]*rad2deg << "\t" << GetTlab(2)  << "\tVr = " << V_pe(fP[2],fE[2]) << "\tPr = " << fP[2] << "\t"; 
   fP[3]=P_tm(fT[3],fM[3]);
   //fP[3]=fGamma_cm*fPcm[3]*(cos(fThetacm[3])+fBeta_cm/fVcm[3]);
-  //cout << fTheta[3]*180./PI << "\t" << GetTlab(3)  << "\tVe = " << V_pe(fP[3],fE[3]) << "\tPe = " << fP[3] << endl; 
+  //cout << fTheta[3]*rad2deg << "\t" << GetTlab(3)  << "\tVe = " << V_pe(fP[3],fE[3]) << "\tPe = " << fP[3] << endl; 
   fV[2]=V_pe(fP[2],fE[2]);
   fV[3]=V_pe(fP[3],fE[3]);
 
@@ -238,6 +353,10 @@ void Kinematics::SetAngles(double angle, int part, bool upper){
     //cout << "inverse kinematics" << endl;
     fThetacm[given]=Angle_lab2cminverse(fVcm[given],fTheta[given],upper);
   }
+  // if(given==2&&!upper){
+  //   fThetacm[given]=Angle_lab2cm_p(fTheta[given],given,upper);
+  // }
+  
   fThetacm[other]=PI-fThetacm[given];
   if(fTheta[given]==0)
     fTheta[other]=PI/given;
@@ -275,12 +394,47 @@ double Kinematics::GetMaxAngle(double vcm){
   else
     return atan2(sqrt(1/(x*x-1)),fGamma_cm);
 }
-double Kinematics::GetMaxAngle(int part){
+double Kinematics::GetMaxAngleP(int part){
   return GetMaxAngle(fVcm[part]);
 }
 bool Kinematics::CheckMaxAngle(double angle, int part){
   return angle <= GetMaxAngle(fVcm[part]);
 }
+
+double Kinematics::Angle_lab2cm_p(double angle_lab, int part, bool upper){
+  double tan_lab = tan(angle_lab);
+  double gtan = tan_lab*tan_lab*fGamma_cm*fGamma_cm;
+  double x = fBeta_cm/fVcm[part];
+  double angle_cm =0;
+  if(part==2){
+    if(tan_lab>=0){
+      //cout << "tan_lab>=0" << endl;
+      angle_cm = acos( (-x*gtan+sqrt( 1+gtan*(1-x*x) ))/(1+gtan) );
+    }
+    else{
+      //cout << "tan_lab<0" << endl;
+      angle_cm = acos( (-x*gtan-sqrt( 1+gtan*(1-x*x) ))/(1+gtan) );
+    }
+    angle_cm = PI-angle_cm;
+  }
+  else if(part==3){
+    //if(tan_lab>=0){
+    if(upper){
+      //cout << "tan_lab>=0" << endl;
+      angle_cm = acos( (-x*gtan+sqrt( 1+gtan*(1-x*x) ))/(1+gtan) );
+    }
+    else{
+      //cout << "tan_lab<0" << endl;
+      angle_cm = acos( (-x*gtan-sqrt( 1+gtan*(1-x*x) ))/(1+gtan) );
+    }
+  }
+
+  return angle_cm;
+  
+
+}
+
+
 double Kinematics::Angle_lab2cm(double vcm, double angle_lab){
   double tan_lab, gtan,x;
   tan_lab = tan(angle_lab);
@@ -334,10 +488,17 @@ void Kinematics::AngleErr_lab2cm(double angle, double &err){
   }
   */
 }
+double Kinematics::Angle_cm2lab_p(double angle_cm, int part){
+  if(part==2)
+    angle_cm = PI - angle_cm;
+  return atan2(sin(angle_cm),fGamma_cm*(cos(angle_cm)+  fBeta_cm/fVcm[part]));
+}
 double Kinematics::Angle_cm2lab(double vcm, double angle_cm){
   double x;
   x = fBeta_cm/vcm;
   return atan2(sin(angle_cm),fGamma_cm*(cos(angle_cm)+x));
+
+  
   /*
   cout << " old " << atan2(sin(angle_cm),fGamma_cm*(cos(angle_cm)+x)) << " x " << x << endl;
   double gam2 = fM[0]*fM[2]/fM[1]/fM[3]*fTCm_i/fTCm_f;
@@ -355,8 +516,8 @@ double Kinematics::Angle_cm2lab(double vcm, double angle_cm){
 
 }
 //x = sqrt(fM[0]*fM[3]/fM[1]/fM[2]*fTCm_i/fTCm_f);
-//cout << "thorsten\t" << asin(sin(angle_cm)/sqrt(1+x*x+2*x*cos(angle_cm)))*180./PI << endl;
-//cout << "ich\t" << atan2(sin(angle_cm),fGamma_cm*(cos(angle_cm)+x))*180./PI << endl;  
+//cout << "thorsten\t" << asin(sin(angle_cm)/sqrt(1+x*x+2*x*cos(angle_cm)))*rad2deg << endl;
+//cout << "ich\t" << atan2(sin(angle_cm),fGamma_cm*(cos(angle_cm)+x))*rad2deg << endl;  
 TSpline3* Kinematics::labvscm(double thmin, double thmax, double size, int part){
   double* cm = new double[(int)((thmax-thmin)/size)+1];
   double* lab = new double[(int)((thmax-thmin)/size)+1];
@@ -397,6 +558,7 @@ double Kinematics::Sigma_cm2lab(double angle_cm, double sigma_cm){
   gam2 = sqrt(gam2);
   double wurzel=1.+gam2*gam2+2.*gam2*cos(PI-angle_cm);
   wurzel = sqrt(wurzel);
+  //cout << "fM[1] = " << fM[1] << "\tfM[3] = " << fM[3] << "\tgam2 = " << gam2 <<"\twurzel = " << wurzel << endl;
   return sigma_cm*(1/fGamma_cm*wurzel*wurzel*wurzel/(1+gam2*cos(PI-angle_cm)));
 }
 /*
@@ -436,6 +598,12 @@ void Kinematics::SigmaErr_lab2cm(double angle, double err, double &sigma, double
   errsigma = fGamma_cm/pow(w,1.5) * sqrt( pow(sigma*g*sin(PI-angle)*(-2+g*g-g*cos(PI-angle))/w * err,2) + pow((1+g*cos(PI-angle))*errsigma,2  ) ); 
   //sigma/=(1/fGamma_cm*w*w*w/(1+g*cos(PI-angle)));
 }
+void Kinematics::Transform2lab(double &angle, double &sigma){
+  //double angle_lab = angle;
+  angle = Angle_cm2lab(fVcm[2], PI-angle);
+  sigma = Sigma_cm2lab(angle, sigma);
+  return;
+}
 void Kinematics::Transform2cm(double &angle, double &sigma){
   //double angle_lab = angle;
   angle = PI-Angle_lab2cm(fVcm[2], angle);
@@ -470,7 +638,7 @@ TSpline3* Kinematics::Ruthvscm(double thmin, double thmax, double size){
 
     //cout << angle[i] << "   " << Rutherford(GetThetacm(2))<<endl;
     //cout << setprecision(4) << GetThetacm(3)/deg2rad << "\t" << setprecision(4) << GetThetacm(2)/deg2rad << "\t" << setprecision(4) << GetThetalab(3)/deg2rad << "\t" << setprecision(4) << GetThetalab(2)/deg2rad << "\t" << setprecision(4) << Rutherford(GetThetacm(3)) << "\t" << setprecision(4) << Rutherford(GetThetacm(2)) << endl;  
-    //cout << (thmin+i*size)*PI/180. << "  max angle: " << GetMaxAngle(fVcm[2]) << endl;
+    //cout << (thmin+i*size)*deg2rad << "  max angle: " << GetMaxAngle(fVcm[2]) << endl;
   }
   TGraph* graph = new TGraph(number, angle, cross);
   TSpline3* spline = new TSpline3("sigmaTh_cm",graph);
@@ -507,13 +675,13 @@ TSpline3* Kinematics::Ruthvslab(double thmin, double thmax, double size, int par
     //cout << " cs lab " << cross[i] << endl;; 
 
   /* for(int i=0;i<(thmax-thmin)/size;i++){
-    Final((thmin+i*size)*PI/180.);
+    Final((thmin+i*size)*deg2rad);
     angle[i]=(thmin+i*size);
-    if(CheckMaxAngle(angle[i]*PI/180., part)){
-      cout << " angle lab " << angle[i] << " GetThetacm(2) " << GetThetacm(2)*180./PI << " GetThetacm(3) " << GetThetacm(3)*180./PI << endl;
+    if(CheckMaxAngle(angle[i]*deg2rad, part)){
+      cout << " angle lab " << angle[i] << " GetThetacm(2) " << GetThetacm(2)*rad2deg << " GetThetacm(3) " << GetThetacm(3)*rad2deg << endl;
       if(angle[i]>179.999||angle[i]<0.001)
 	continue;
-      if( fabs(GetMaxAngle(fVcm[part])*180./PI-angle[i]) <size)
+      if( fabs(GetMaxAngle(fVcm[part])*rad2deg-angle[i]) <size)
 	continue;
       
       cross[i]= Sigma_cm2lab(fVcm[part], GetThetacm(2), Rutherford(GetThetacm(2)));
@@ -543,6 +711,10 @@ double Kinematics::Pcm_em(double e, double m){
 }
 double Kinematics::P_tm(double t, double m){
   return sqrt(t*t+2.*t*m);
+}
+double Kinematics::T_pm(double p, double m){
+  p/=m;
+  return p*p/(1+sqrt(1+p*p))*m;
 }
 double Kinematics::E_tm(double t, double m){
   return t+m;
