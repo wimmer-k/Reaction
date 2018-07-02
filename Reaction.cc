@@ -726,9 +726,9 @@ int main(int argc, char* argv[]){
     //boomboom[3] = new Kinematics(proj, targ, reco, ejec, ebeam, 3.892);
     
     //Te for KAKENHI
-    Kinematics *boomboom[7];
-    for(int i=0;i<7;i++)
-      boomboom[i] = new Kinematics(proj, targ, reco, ejec, ebeam, 0.0);
+    Kinematics *boomboom[3];
+    for(int i=0;i<3;i++)
+      boomboom[i] = new Kinematics(proj, targ, reco, ejec, ebeam, 0.710);
 
     //Ti for DOE proposal
     //Kinematics *boomboom[4];
@@ -812,6 +812,10 @@ int main(int argc, char* argv[]){
 	vector<double> xlabr;
 	vector<double> ylabr;
 	vector<double> ylabcs;
+	vector<double> xlabe;
+	vector<double> ylabe;
+	vector<double> xlaber;
+	vector<double> ylaber;
 
 	x.resize(splinecm->GetNp());
 	y.resize(splinecm->GetNp());
@@ -819,6 +823,10 @@ int main(int argc, char* argv[]){
 	ylab.resize(splinecm->GetNp());
 	xlabr.resize(splinecm->GetNp());
 	ylabr.resize(splinecm->GetNp());
+	xlabe.resize(splinecm->GetNp());
+	ylabe.resize(splinecm->GetNp());
+	xlaber.resize(splinecm->GetNp());
+	ylaber.resize(splinecm->GetNp());
 	ylabcs.resize(splinecm->GetNp());
 
 	double crosscm[3]={0.,0.,0.};
@@ -847,7 +855,10 @@ int main(int argc, char* argv[]){
 	    }
 	    //cout << " theta " << x[i] << " cs " << y[i] << endl;  
 	    xlab[i] = boomboom[j]->Angle_cm2lab(boomboom[j]->GetVcm(2),(180-x[i])*deg2rad)*rad2deg;
-	    ylab[i] = boomboom[j]->Sigma_cm2lab(x[i]*deg2rad,y[i]);
+	    ylab[i] = boomboom[j]->Sigma_cm2lab_p(x[i]*deg2rad,y[i],2);
+	    //ejectile
+	    xlabe[i] = boomboom[j]->Angle_cm2lab(boomboom[j]->GetVcm(3),x[i]*deg2rad)*rad2deg;
+	    ylabe[i] = boomboom[j]->Sigma_cm2lab_p(x[i]*deg2rad,y[i],3);
 	    if(i>0){
 	      crosslab[0] += (ylab[i]*sin(xlab[i]*deg2rad)+ylab[i-1]*sin(xlab[i-1]*deg2rad))/2.*(xlab[i]-xlab[i-1])*deg2rad;
 	      if(xlab[i]>trexmin&&xlab[i]<trexmax)
@@ -855,7 +866,7 @@ int main(int argc, char* argv[]){
 	      if(xlab[i]>oldmin&&xlab[i]<oldmax)
 		crosslab[2] += (ylab[i]*sin(xlab[i]*deg2rad)+ylab[i-1]*sin(xlab[i-1]*deg2rad))/2.*(xlab[i]-xlab[i-1])*deg2rad;
 	    }
-	    txtfile << xlab[i] << "\t" << ylab[i] << endl;
+	    txtfile << x[i] << "\t" << y[i] << "\t" << xlab[i] << "\t" << ylab[i] <<"\t"<< xlabe[i] << "\t" << ylabe[i] << endl;
 	    //cout << x[i] << "\t" << y[i] << "\t" << xlab[i] << "\t" << ylab[i] << endl;
 	    histcm[j]->Fill(x[i],y[i]);
 	    histlab[j]->Fill(xlab[i],ylab[i]);
@@ -924,7 +935,10 @@ int main(int argc, char* argv[]){
 	      }
 	    }
 	    xlab[i] = boomboom[j]->Angle_cm2lab(boomboom[j]->GetVcm(2),(180-x[i])*deg2rad)*rad2deg;
-	    ylab[i] = boomboom[j]->Sigma_cm2lab(x[i]*deg2rad,y[i]);
+	    ylab[i] = boomboom[j]->Sigma_cm2lab_p(x[i]*deg2rad,y[i],2);
+	    //ejectile
+	    xlabe[i] = boomboom[j]->Angle_cm2lab(boomboom[j]->GetVcm(3),x[i]*deg2rad)*rad2deg;
+	    ylabe[i] = boomboom[j]->Sigma_cm2lab_p(x[i]*deg2rad,y[i],3);
 	    if(i>0){
 	      crosslab[0] += (ylab[i]*sin(xlab[i]*deg2rad)+ylab[i-1]*sin(xlab[i-1]*deg2rad))/2.*(xlab[i]-xlab[i-1])*deg2rad;
 	      if(xlab[i]>trexmin&&xlab[i]<trexmax)
@@ -933,7 +947,7 @@ int main(int argc, char* argv[]){
 		crosslab[2] += (ylab[i]*sin(xlab[i]*deg2rad)+ylab[i-1]*sin(xlab[i-1]*deg2rad))/2.*(xlab[i]-xlab[i-1])*deg2rad;
 	    }
 	    //cout << x[i] << "\t" << y[i] << "\t" << xlab[i] << "\t" << ylab[i] << endl;
-	    txtfile << xlab[i] << "\t" << ylab[i] << endl;
+	    txtfile << x[i] << "\t" << y[i] << "\t" << xlab[i] << "\t" << ylab[i] <<"\t"<< xlabe[i] << "\t" << ylabe[i] << endl;
 	    histcm[j]->Fill(x[i],y[i]*sin(x[i]*deg2rad));
 	    histlab[j]->Fill(xlab[i],ylab[i]*sin(xlab[i]*deg2rad));
 	  }

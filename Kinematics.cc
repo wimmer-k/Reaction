@@ -554,12 +554,20 @@ TSpline3* Kinematics::cmvslab(double thmin, double thmax, double size, int part)
 }
 
 double Kinematics::Sigma_cm2lab(double angle_cm, double sigma_cm){
+  double theta = PI-angle_cm;
   double gam2 = fM[0]*fM[2]/fM[1]/fM[3]*fTCm_i/fTCm_f;
   gam2 = sqrt(gam2);
-  double wurzel=1.+gam2*gam2+2.*gam2*cos(PI-angle_cm);
+  double wurzel=1.+gam2*gam2+2.*gam2*cos(theta);
   wurzel = sqrt(wurzel);
   //cout << "fM[1] = " << fM[1] << "\tfM[3] = " << fM[3] << "\tgam2 = " << gam2 <<"\twurzel = " << wurzel << endl;
-  return sigma_cm*(1/fGamma_cm*wurzel*wurzel*wurzel/(1+gam2*cos(PI-angle_cm)));
+  return sigma_cm*(1/fGamma_cm*wurzel*wurzel*wurzel/(1+gam2*cos(theta)));
+}
+double Kinematics::Sigma_cm2lab_p(double angle_cm, double sigma_cm, int part){
+  if(part==2)
+    angle_cm = PI - angle_cm;
+  double wurzel = sin(angle_cm)*sin(angle_cm)+fGamma_cm*fGamma_cm*(cos(angle_cm)+  fBeta_cm/fVcm[part])*(cos(angle_cm)+  fBeta_cm/fVcm[part]);
+  wurzel = pow(wurzel,3./2);
+  return sigma_cm/fGamma_cm*wurzel/(1+fBeta_cm/fVcm[part]*cos(angle_cm));
 }
 /*
 double Kinematics::Sigma_cm2lab(double angle_cm, double sigma_cm){

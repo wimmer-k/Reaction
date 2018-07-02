@@ -127,6 +127,7 @@ public:
   double Angle_cm2lab(double vcm, double angle_cm);
   double Angle_cm2lab_p(double angle_cm, int part);
   double Sigma_cm2lab(double angle_cm, double sigma_cm);
+  double Sigma_cm2lab_p(double angle_cm, double sigma_cm, int part);
   double Sigma_lab2cm(double angle_cm, double sigma_lab);
   void Transform2cm(double &angle, double &sigma);
   void Transform2cm(double &angle, double &errangle, double &sigma, double &errsigma);

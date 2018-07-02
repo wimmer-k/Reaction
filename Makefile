@@ -9,7 +9,7 @@ ROOTLIBS     := $(shell root-config --libs)
 ROOTGLIBS    := $(shell root-config --glibs)
 ROOTINC      := -I$(shell root-config --incdir)
 
-COMMON_DIR = $(HOME)/TINAanalysis/common
+COMMON_DIR = $(HOME)/programs/common
 
 
 BASELIBS  = -lm $(ROOTLIBS) $(ROOTGLIBS) -L$(LIB_DIR)
@@ -28,7 +28,7 @@ CFLAGS += -Wl,--no-as-needed
 LFLAGS += -Wl,--no-as-needed
 DFLAGS += -Wl,--no-as-needed
 
-CFLAGS += -DMASSFILE=\"/home/daq/TINAanalysis/ELoss/mass.dat\"
+CFLAGS += -DMASSFILE=\"/home/wimmer/programs/Reaction/mass.dat\"
 
 O_FILES = Nucleus.o \
 	Kinematics.o 
